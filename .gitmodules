@@ -1,0 +1,3 @@
+[submodule "works"]
+	path = works
+	url = git@github.com:TrueBlocks/trueblocks-works.git
