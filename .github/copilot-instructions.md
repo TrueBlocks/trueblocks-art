@@ -44,26 +44,43 @@ set -x GOPATH $HOME/go
 
 ---
 
-## 4. Directory Discipline
+## 3.1. Wails Bindings (ZERO TOLERANCE)
 
-- **Never cd into a subfolder and stay there.**
-- If you must cd, immediately cd back when done.
-- Prefer absolute paths or path arguments instead of cd.
+- **NEVER edit files in `./frontend/wailsjs/`** — these are auto-generated
+- Only regenerate by running `wails generate module` from the project root
+- After any Go backend changes that affect exported functions, run:
+  ```fish
+  wails generate module
+  ```
+
+---
+
+## 4. Directory Discipline (ZERO TOLERANCE)
+
+⛔ **NEVER USE `cd` TO CHANGE INTO A SUBFOLDER. EVER.**
+
+This is a HARD RULE with NO EXCEPTIONS:
+- **NEVER** write `cd frontend` or `cd` into any subfolder
+- **NEVER** run commands from inside subfolders
+- **ALWAYS** run commands from the submodule root using `--prefix` or absolute paths
 
 ```fish
-# WRONG
-cd frontend
-npm install
-npm run build
-# (forgot to cd back)
+# ABSOLUTELY FORBIDDEN — NEVER DO THIS
+cd frontend; and yarn build    # ❌ WRONG
+cd frontend                    # ❌ WRONG
+pushd frontend                 # ❌ WRONG
 
-# RIGHT
-npm --prefix frontend install
-npm --prefix frontend run build
-
-# OR
-cd frontend; npm install; cd ..
+# CORRECT — Always use --prefix from submodule root
+yarn --cwd frontend build      # ✅ RIGHT
+yarn --cwd ./frontend build    # ✅ RIGHT
 ```
+
+**Why this matters:**
+1. Agents lose track of current directory between requests
+2. Subsequent commands fail silently or in wrong location
+3. Creates confusion and broken state
+
+**If you catch yourself about to type `cd`:** STOP. Use `--cwd` or `--prefix` instead.
 
 ---
 
@@ -139,6 +156,9 @@ If caught: "I cannot implement code changes while in design mode."
 - **No comments in production code** — only for TODO items
 - **No commented-out code** — delete it
 - Only comment *why*, never *what*
+- **No lint suppressions** — never use `eslint-disable`, `@ts-ignore`, `@ts-expect-error`, or `nolint`
+  - Fix the underlying issue instead of suppressing the warning
+  - If lint rules conflict with valid code patterns, restructure the code
 
 ---
 
@@ -166,7 +186,30 @@ If caught: "I cannot implement code changes while in design mode."
 
 ---
 
-## 11. Testing
+## 11. Go File Creation (CRITICAL BUG PREVENTION)
+
+⚠️ **KNOWN ISSUE**: When creating `.go` files, there is a recurring bug where files get corrupted with:
+- Duplicate `package` declarations at the top
+- Many blank lines
+- All remaining code collapsed onto a single line
+
+**PREVENTION RULES:**
+
+1. **Create ONE Go file at a time** — never batch multiple Go file creations in parallel
+2. **Immediately verify** after creating any Go file by running `go build ./path/to/package/...`
+3. **If verification fails**, delete the file with rm -f and recreate it from scratch
+4. **Keep content simple** — avoid complex string escaping or special characters
+5. **After creating a Go file**, read it back to confirm it's correctly formatted before moving on
+
+**Recovery procedure if corruption occurs:**
+```fish
+rm -f path/to/corrupted.go
+# Then recreate the file fresh
+```
+
+---
+
+## 12. Testing
 
 - Use **Vitest** for all tests, never Jest
 - Do not run tests during implementation — user will run and report
@@ -174,7 +217,7 @@ If caught: "I cannot implement code changes while in design mode."
 
 ---
 
-## 12. VS Code Problems Reset
+## 13. VS Code Problems Reset
 
 When VS Code shows stale errors:
 ```
@@ -184,7 +227,7 @@ Cmd+Shift+P → "Developer: Reload Window"
 
 ---
 
-## 13. Git
+## 14. Git
 
 - Commit early and often
 - Clear messages: `feat:`, `fix:`, `refactor:`, `docs:`
