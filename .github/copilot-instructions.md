@@ -33,6 +33,35 @@ set -x GOPATH $HOME/go
 
 ---
 
+## 2.1. Yarn Command Location (ZERO TOLERANCE)
+
+⛔ **NEVER RUN YARN FROM THE FRONTEND FOLDER. EVER.**
+
+This is a HARD RULE with NO EXCEPTIONS:
+- **NEVER** use `yarn --cwd frontend ...` or `yarn --cwd ./frontend ...`
+- **NEVER** use `yarn --cwd /path/to/frontend ...`
+- **ALWAYS** run yarn from the submodule root (e.g., `/works`)
+- **ALWAYS** use `yarn lint`, `yarn test`, `yarn type-check` directly from root
+
+```fish
+# ABSOLUTELY FORBIDDEN — NEVER DO THIS
+yarn --cwd frontend lint           # ❌ WRONG
+yarn --cwd ./frontend type-check   # ❌ WRONG
+yarn --cwd /path/to/frontend build # ❌ WRONG
+
+# CORRECT — Always from submodule root
+cd /path/to/works; and yarn lint       # ✅ RIGHT
+cd /path/to/works; and yarn type-check # ✅ RIGHT
+cd /path/to/works; and yarn build      # ✅ RIGHT
+```
+
+**Why this matters:**
+1. The submodule root has the correct package.json with all scripts
+2. Using `--cwd frontend` bypasses root-level configuration
+3. Creates inconsistent behavior between agent and user
+
+---
+
 ## 3. Critical Workflow
 
 - **DO NOT RUN YARN COMMANDS** unless explicitly requested by the user
