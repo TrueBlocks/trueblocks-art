@@ -150,6 +150,11 @@ If caught: "I cannot implement code changes while in design mode."
 
 ## 8. Code Quality Principles
 
+- **DRY (Don't Repeat Yourself)** — ZERO TOLERANCE
+  - If you write the same logic twice, extract it immediately
+  - Before implementing: "Does this pattern exist elsewhere? Should I extract a shared utility?"
+  - Shared utilities go in `@/utils`, shared components in `@/components`, shared hooks in `@/hooks`
+  - When adding features to one page/component, check if others need the same pattern
 - **No over-engineering**: Simple, boring code that works
 - **STOP and THINK**: "What's the simplest solution?"
 - **No `any` in TypeScript** — always use specific types
